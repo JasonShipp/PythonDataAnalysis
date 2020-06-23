@@ -62,10 +62,10 @@ to_predict = imported_to_predict.copy()
 def data_preprocessing(input_data):
 
     '''
-	- Function takes a data frame as an input
-	- Data is processed to prep it for training/feeding a model
-	- Global parameters control feature/predictor variables and model parameters
-	'''
+    - Function takes a data frame as an input
+    - Data is processed to prep it for training/feeding a model
+    - Global parameters control feature/predictor variables and model parameters
+    '''
 
     global outcome_variables
     global variables_to_ignore
@@ -168,11 +168,11 @@ def data_preprocessing(input_data):
             range_val = max_val - min_val 
             input_data[col] = input_data[col].apply(lambda x: (x - min_val) / range_val)
     '''
-	
+    
     return input_data
-	
+    
 ########## Model data pre-processing ##########
-	
+    
 print('########## Model data pre-processing ##########')
 
 raw = data_preprocessing(input_data = raw)
@@ -182,44 +182,44 @@ raw = data_preprocessing(input_data = raw)
 print('Combining multiple outcome variables into 1 column')
 
 if len(outcome_variables) > 1:
-	raw[str('-'.join(outcome_variables))] = raw[outcome_variables].astype(str).agg('-'.join, axis = 1)
-	raw.drop(outcome_variables, axis = 1, inplace = True)
-	outcome_variables = ['-'.join(outcome_variables)]
+    raw[str('-'.join(outcome_variables))] = raw[outcome_variables].astype(str).agg('-'.join, axis = 1)
+    raw.drop(outcome_variables, axis = 1, inplace = True)
+    outcome_variables = ['-'.join(outcome_variables)]
         
 # Split the data into training and testing data sets
 
 print('Splitting data into training and testing')
 
 train_data, test_data, = sklearn.model_selection.train_test_split(
-	raw
-	, train_size = 0.8 # % of data to use for training (rets used for testing)
-	, random_state = 1
-	, shuffle = True
+    raw
+    , train_size = 0.8 # % of data to use for training (rets used for testing)
+    , random_state = 1
+    , shuffle = True
 )
         
 # Up-sample rare outcome variable in training data to match proportion made up by other variable values
 
 print('Training data before up-sampling outcome variable:')
 print(pd.pivot_table(
-	data = train_data
-	, index = outcome_variables
-	, values = train_data.columns[0]
-	, aggfunc = 'count'
+    data = train_data
+    , index = outcome_variables
+    , values = train_data.columns[0]
+    , aggfunc = 'count'
 ).rename(columns = {train_data.columns[0]:'Count'})) # Before up-sampling
 
 train_data_variables_no_upsampling = train_data[train_data[outcome_variables[0]].apply(lambda x: not(x in outcome_variable_values_to_upsample))]
 train_data_variables_upsampling = train_data[train_data[outcome_variables[0]].apply(lambda x: x in outcome_variable_values_to_upsample)]
 
 if len(outcome_variable_values_to_upsample) > 0:
-	train_data_variables_upsampled = train_data_variables_upsampling.sample(n = len(train_data_variables_no_upsampling), replace = True)
-	train_data = pd.concat([train_data_variables_no_upsampling, train_data_variables_upsampled], axis = 0)
+    train_data_variables_upsampled = train_data_variables_upsampling.sample(n = len(train_data_variables_no_upsampling), replace = True)
+    train_data = pd.concat([train_data_variables_no_upsampling, train_data_variables_upsampled], axis = 0)
 
 print('Training data after up-sampling outcome variable:')
 print(pd.pivot_table(
-	data = train_data
-	, index = outcome_variables
-	, values = train_data.columns[0]
-	, aggfunc = 'count'
+    data = train_data
+    , index = outcome_variables
+    , values = train_data.columns[0]
+    , aggfunc = 'count'
 ).rename(columns = {train_data.columns[0]:'Count'})) # After up-sampling
 
 # Encode the outcome variable(s) as numeric values if not already numeric
@@ -228,28 +228,28 @@ label_encoder = sklearn.preprocessing.LabelEncoder()
 
 print('Encoding outcome variable(s) if not already numeric: ' + ', '.join(outcome_variables))
 for col in outcome_variables:
-	train_data[col] = label_encoder.fit_transform(train_data[col]) # Inverse: label_encoder.inverse_transform(raw[col])
-	test_data[col] = label_encoder.fit_transform(test_data[col])		
-	
+    train_data[col] = label_encoder.fit_transform(train_data[col]) # Inverse: label_encoder.inverse_transform(raw[col])
+    test_data[col] = label_encoder.fit_transform(test_data[col])        
+    
 ########## Determine important variables using sklearn ##########
 
 print('########## Determining important variables using sklearn ##########')
-	
+    
 # Pre-fit a Random Forest model, to determine important variables for predicting the outcome variable(s)
 
 model0 = sklearn.ensemble.RandomForestRegressor(random_state = 2, max_depth = 10)
 
 model0.fit(
     X = train_data.drop(outcome_variables, axis = 1)
-	, y = train_data[outcome_variables].values.ravel()
+    , y = train_data[outcome_variables].values.ravel()
 )
 
 # Output variable importance
 
 print('Pre-fit model variable importance')
 print(pd.DataFrame([
-	pd.Series(list(filter(lambda i: not(i in outcome_variables), raw.columns)), name = 'Variable')
-	, pd.Series(model0.feature_importances_, name = 'Importance')
+    pd.Series(list(filter(lambda i: not(i in outcome_variables), raw.columns)), name = 'Variable')
+    , pd.Series(model0.feature_importances_, name = 'Importance')
 ]).transpose().sort_values(by = 'Importance', ascending = False))
 
 # Chose important variables to include in model
@@ -270,13 +270,13 @@ model1 = sklearn.ensemble.RandomForestRegressor(random_state = 3, max_depth = 10
 
 model1.fit(
     X = train_data.drop(outcome_variables, axis=1)[important_feature_columns]
-	, y = train_data[outcome_variables].values.ravel()
+    , y = train_data[outcome_variables].values.ravel()
 )
 
 print('Model1 variable importance')
 print(pd.DataFrame([
-	pd.Series(important_feature_columns, name = 'Variable')
-	, pd.Series(model1.feature_importances_, name = 'Importance')
+    pd.Series(important_feature_columns, name = 'Variable')
+    , pd.Series(model1.feature_importances_, name = 'Importance')
 ]).transpose().sort_values(by = 'Importance', ascending = False))
 
 # Test model on testing data
