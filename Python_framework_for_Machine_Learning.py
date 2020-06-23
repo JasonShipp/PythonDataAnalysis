@@ -57,7 +57,7 @@ raw = imported.copy()
 imported_to_predict = imported.copy().drop(outcome_variables, axis = 1).sample(random_state = 0, n = int(len(imported)/10))
 to_predict = imported_to_predict.copy()
 
-########## Data pre-processing Function ##########
+########## Data pre-processing function ##########
 
 def data_preprocessing(input_data):
 
