@@ -4,7 +4,7 @@ Created: on 20/06/2020
 Author: Jason Shipp
 
 Purpose: 
-    - Python framework for data modeling using machine learning, including data prep, training, testing and prediction
+    - Python framework for data modeling using machine learning, including data preparation, training, testing and prediction
     - Iris flower data set used as an example to train and test Random Forest classification models
 ****************************************************************************'''
 
