@@ -186,7 +186,7 @@ if len(outcome_variables) > 1:
 	raw.drop(outcome_variables, axis = 1, inplace = True)
 	outcome_variables = ['-'.join(outcome_variables)]
         
-# Split the data into training and testing datasets
+# Split the data into training and testing data sets
 
 print('Splitting data into training and testing')
 
