@@ -9,21 +9,33 @@ Purpose:
 
 ########## Data pre-processing function ##########
 
-def data_preprocessing(input_data, input_outcome_variables, input_variables_to_ignore, input_proportion_of_normal_distribution_to_keep):
+def data_preprocessing(is_training, input_data, input_outcome_variables, input_variables_to_ignore, input_dense_text_variables, input_proportion_of_normal_distribution_to_keep):
+
+    working_directory = r"C:/Users/jason/OneDrive/Documents/PythonDataAnalysis/MachineLearningFramework/"
 
     import pandas as pd
     import re
     import scipy.stats
+    import sklearn.feature_extraction
+    import joblib    
     
     '''
     - Input data frame is processed to prep it for training/feeding a model
     - Function takes the following inputs:
+        - is_training: Bit value. Only used if a dense text variable(s) exists. If 1, a text vectoriser is trained. Otherwise, a pre-trained vectoriser is loaded
         - input_data: Data frame to pre-process
         - input_outcome_variables: List of outcome variable(s) to predict (leave blank if input is live data, i.e. the outcome variables are to be predicted)
         - input_variables_to_ignore: List of variables not to include in model (e.g. row ID columns)
+        - input_dense_text_variables: List of variables that contain dense text, to transform into feature vector columns using sklearn.feature_extraction.text.TfidfVectorizer
         - input_proportion_of_normal_distribution_to_keep: Proportion of a normal distribution to treat as non-outlying data
             - Used to calculate the threshold distance from the mean to treat as outlying, to exclude from the training data 
     '''
+    
+    # Reset input data index
+    
+    print('Resetting index')
+    
+    input_data.reset_index(drop = True, inplace = True)
 
     # Remove columns that should be ignored
 
@@ -79,7 +91,7 @@ def data_preprocessing(input_data, input_outcome_variables, input_variables_to_i
 
     # Produce dummy variables from non-numeric columns
 
-    for col in list(filter(lambda i: not(i in input_outcome_variables), input_data.columns)):
+    for col in list(filter(lambda i: not(i in (input_outcome_variables + input_dense_text_variables)), input_data.columns)):
         dtype = input_data[col].dtype.name
         if bool(re.search('object', dtype)) or bool(re.search('category', dtype)):
             print('Adding dummy variable columns to replace ' + col + ' column')
@@ -107,6 +119,47 @@ def data_preprocessing(input_data, input_outcome_variables, input_variables_to_i
             mean = input_data[col].mean()
             std = input_data[col].std()
             input_data[col] = input_data[col].apply(lambda x: (x - mean) / std)
+
+    # Transform dense text variables into feature vector columns
+    
+    for col in input_dense_text_variables:
+    
+        print('Transforming ' + col + ' dense text variable column into feature vector columns')
+        
+        if is_training == 1:
+            text_vectoriser = sklearn.feature_extraction.text.TfidfVectorizer(
+                max_features = 10000
+                , decode_error = 'ignore'
+                , strip_accents = 'ascii'
+                , lowercase = True
+                , vocabulary = None
+            )
+        else:
+            text_vectoriser = sklearn.feature_extraction.text.TfidfVectorizer(
+                max_features = 10000
+                , decode_error = 'ignore'
+                , strip_accents = 'ascii'
+                , lowercase = True
+                , vocabulary = joblib.load(working_directory + col + 'text_vectoriser_vocab.sav')
+            )
+        
+        # Extract text feature vectors (sparse matrix)
+        text_vectors = text_vectoriser.fit_transform(raw_documents = input_data[col].astype(str))
+            
+        # Convert text feature vectors into a data frame 
+        text_features_vectorised = pd.DataFrame.sparse.from_spmatrix(
+            data = text_vectors
+            , columns = ([col + str(i) for i in (pd.RangeIndex(start = 1, stop = text_vectors.shape[1]+1, step = 1).to_list())])
+        ).fillna(0)
+        # text_features_vectorised.iloc[:, 0].sparse.to_dense().sum() # Check sum of vector values in new variable column
+        
+        # substitute in new variable columns
+        input_data = pd.concat(objs = [input_data, text_features_vectorised], axis = 1).drop(col, axis = 1)
+        
+        # Save text vectoriser if training model
+        
+        if is_training == 1:
+            joblib.dump(text_vectoriser.vocabulary_, working_directory + col + 'text_vectoriser_vocab.sav')        
 
     '''        
     # Normalise numeric values
