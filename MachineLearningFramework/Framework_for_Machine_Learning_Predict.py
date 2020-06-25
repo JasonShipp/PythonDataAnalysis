@@ -11,6 +11,8 @@ Purpose:
 
 working_directory = r"C:/Users/jason/OneDrive/Documents/PythonDataAnalysis/MachineLearningFramework/"
 
+dense_text_variables = [] # List of variables that contain dense text, to transform into feature vector columns using sklearn.feature_extraction.text.TfidfVectorizer
+
 # Import modules
 
 import sys
@@ -32,8 +34,8 @@ from sklearn.datasets import load_iris
 iris = load_iris()
 
 imported = pd.DataFrame(data = iris.data, columns = iris.feature_names)
-imported['species'] = iris.target
-imported['species']= imported['species'].map(dict(enumerate(iris.target_names, 0)))
+imported[outcome_variables[0]] = iris.target
+imported[outcome_variables[0]]= imported[outcome_variables[0]].map(dict(enumerate(iris.target_names, 0)))
 
 imported_to_predict = imported.copy().drop(outcome_variables, axis = 1).sample(random_state = 0, n = int(len(imported)/10))
 to_predict = imported_to_predict.copy()
@@ -54,12 +56,14 @@ model2 = h2o.load_model(working_directory + 'model2.sav')
 
 print('########## Processing live data to make a prediction on ##########')
 
-# Clean and standardise data
+# Clean and standardise data    
 
 to_predict = data_preprocessing(
-    input_data = to_predict
+    is_training = 0
+    , input_data = to_predict
     , input_outcome_variables = []
     , input_variables_to_ignore = []
+    , input_dense_text_variables = dense_text_variables
     , input_proportion_of_normal_distribution_to_keep = 1
 )
 
