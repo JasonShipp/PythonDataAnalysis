@@ -17,6 +17,8 @@ outcome_variables = ['species'] # List of outcome variable(s) to predict
 
 variables_to_ignore = [] # List of variables not to include in model (e.g. row ID columns)
 
+dense_text_variables = [] # List of variables that contain dense text, to transform into feature vector columns using sklearn.feature_extraction.text.TfidfVectorizer
+
 proportion_of_normal_distribution_to_keep = 0.99 # Proportion of a normal distribution to treat as non-outlying data
 # Used to calculate the threshold distance from the mean to treat as outlying, to exclude from the training data 
 
@@ -58,7 +60,7 @@ print(imported.describe())
 
 # Load data for training and testing model
 
-raw = imported.copy()
+raw = imported.copy()    
 
 ########## Model data pre-processing ##########
     
@@ -67,9 +69,11 @@ print('########## Model data pre-processing ##########')
 # Clean and standardise data
 
 raw = data_preprocessing(
-    input_data = raw
+    is_training = 1
+    , input_data = raw
     , input_outcome_variables = outcome_variables
     , input_variables_to_ignore = variables_to_ignore
+    , input_dense_text_variables = dense_text_variables
     , input_proportion_of_normal_distribution_to_keep = proportion_of_normal_distribution_to_keep
 )
 
