@@ -4,7 +4,20 @@ Created: on 24/06/2020
 Author: Jason Shipp
 
 Purpose: 
-    - Defines a function for pre-processing a data frame in preparation for training a model/ making a prediction on an outcome
+    - Defines a function for pre-processing a data frame in preparation for training a model/ making a prediction on an outcome variable
+    - Pre-processing steps carried out:
+        - Resets the index of the input data
+        - Removes columns that should be ignored
+        - Removes rows where the outcome variable(s) is missing
+        - Removes columns with over 50% missing data
+        - Removes rows with over 60% missing data
+        - Updates missing values: column mode for non-numeric, column median for numeric/ date/ time delta
+        - Replaces numeric outliers by the mean of the column
+        - Produces dummy variables from non-numeric columns
+        - Transforms date and time delta columns to numeric
+        - Standardises numeric values
+        - Transforms dense text variables into feature vector columns
+        - Normalises numeric values (commented out by default)
 ****************************************************************************'''
 
 ########## Data pre-processing function ##########
