@@ -5,8 +5,11 @@ Author: Jason Shipp
 
 Purpose: 
     - Python framework for data modeling using machine learning, including data preparation, training and testing
-    - Iris flower data set used as an example to train and test Random Forest classification models, using sklearn and H2O libraries
-    - Output models, parameter label encoder and important data features saved in directory pointed to by working_directory parameter 
+    - Script is currently configured to use Iris flower data to train and test Random Forest classification models, using sklearn and H2O libraries
+    - The input data and model type are customisable by tweaking the parameters and model-training sections 
+    - Models, the parameter label encoder and the important data features are saved in the directory pointed to by the working_directory parameter
+    - Data pre-processing is carried out by calling the data_preprocessing function in the Framework_for_Machine_Learning_Data_Prep.py script
+    - The above function exports a vocabulary dictionary if text feature vectors are included in the data pre-processing
 ****************************************************************************'''
 
 # Set up parameters
