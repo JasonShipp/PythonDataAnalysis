@@ -10,14 +10,14 @@ Purpose:
 
 # Set up parameters
 
-working_directory = r"C:/Users/jason/OneDrive/Documents/PythonDataAnalysis/MachineLearningFramework/"
+working_directory = r"C:/Users/jason/OneDrive/Documents/PythonDataAnalysis/MachineLearningFramework/" # Directory of Machine Learning scripts
 
 dense_text_variables = [] # List of variables that contain dense text, to transform into feature vector columns using sklearn.feature_extraction.text.TfidfVectorizer
 
 # Import modules
 
 import sys
-sys.path.append(working_directory) # Directory of custom Machine Learning scripts
+sys.path.append(working_directory) # Make other Machine Learning scripts accessible
 
 import pandas as pd
 import numpy as np
