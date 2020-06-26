@@ -14,7 +14,7 @@ Purpose:
 
 # Set up parameters
 
-working_directory = r"C:/Users/jason/OneDrive/Documents/PythonDataAnalysis/MachineLearningFramework/"
+working_directory = r"C:/Users/jason/OneDrive/Documents/PythonDataAnalysis/MachineLearningFramework/" # Directory of Machine Learning scripts
 
 outcome_variables = ['species'] # List of outcome variable(s) to predict
 
@@ -33,7 +33,7 @@ threshold_variable_importance = 0.001 # Threshold importance (out of 1) above wh
 # Import modules
 
 import sys
-sys.path.append(working_directory) # Directory of custom Machine Learning scripts
+sys.path.append(working_directory) # Make other Machine Learning scripts accessible
 
 import pandas as pd
 import numpy as np
