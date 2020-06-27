@@ -80,6 +80,3 @@ imported_to_predict['Model2_Prediction'] = label_encoder.inverse_transform((mode
 
 print('Predicted outcomes on live data')
 print(imported_to_predict)
-
-print('Actual outcomes in live data')
-print(imported.copy().sample(random_state = 0, n = int(len(imported)/10)))
