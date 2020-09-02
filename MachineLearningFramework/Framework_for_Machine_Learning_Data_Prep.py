@@ -8,6 +8,7 @@ Purpose:
     - Pre-processing steps carried out:
         - Resets the index of the input data
         - Removes columns that should be ignored
+        - Converts object columns to numeric if it is possible to do so
         - Removes rows where the outcome variable(s) is missing
         - Removes columns with over 50% missing data
         - Removes rows with over 60% missing data
@@ -26,11 +27,11 @@ def data_preprocessing(is_training, input_data, input_outcome_variables, input_v
 
     working_directory = r"C:/Users/jason/OneDrive/Documents/PythonDataAnalysis/MachineLearningFramework/"
 
+    import joblib
     import pandas as pd
     import re
     import scipy.stats
-    import sklearn.feature_extraction
-    import joblib    
+    import sklearn.feature_extraction  
     
     '''
     - Input data frame is processed to prep it for training/feeding a model
@@ -53,11 +54,23 @@ def data_preprocessing(is_training, input_data, input_outcome_variables, input_v
     # Remove columns that should be ignored
 
     print('Dropping columns marked as to be ignored')
+    
     input_data.drop(input_variables_to_ignore, axis = 1, inplace = True)
+    
+    # Change Object columns to numeric if it is possible to do so
+    
+    print('Converting object columns to numeric if it is possible to do so')
+    
+    for col in list(filter(lambda i: not(i in input_outcome_variables), input_data.columns)):
+        dtype = input_data[col].dtype.name
+        if bool(re.search('object', dtype)):
+            if pd.to_numeric(input_data[col].dropna(), errors = 'coerce').notnull().all() == True:
+                input_data[col] = pd.to_numeric(input_data[col], errors = 'raise') 
 
     # Remove rows where the outcome variable(s) is missing
 
     print('Dropping rows where the outcome variable(s) is missing: ' + ', '.join(input_outcome_variables))
+    
     for col in list(filter(lambda i: not(i in input_outcome_variables), input_data.columns)):
         input_data = input_data[input_data[col].apply(lambda x: not(x == '' or pd.isna(x)))]
 
@@ -80,6 +93,7 @@ def data_preprocessing(is_training, input_data, input_outcome_variables, input_v
     # Update missing values: column mode for non-numeric, column median for numeric/ date/ time delta
 
     print('Imputing missing values')
+    
     for col in list(filter(lambda i: not(i in input_outcome_variables), input_data.columns)):
         dtype = input_data[col].dtype.name
         if bool(re.search('object', dtype)) or bool(re.search('category', dtype)):
@@ -126,12 +140,14 @@ def data_preprocessing(is_training, input_data, input_outcome_variables, input_v
     # Standardise numeric values
 
     print('Rescaling the distribution of numeric values so the mean is 0 and the standard deviation is 1')
+    
     for col in list(filter(lambda i: not(i in input_outcome_variables), input_data.columns)):
         dtype = input_data[col].dtype.name
         if bool(re.search('int', dtype)) or bool(re.search('float', dtype)):
             mean = input_data[col].mean()
             std = input_data[col].std()
-            input_data[col] = input_data[col].apply(lambda x: (x - mean) / std)
+            if std != 0:
+                input_data[col] = input_data[col].apply(lambda x: (x - mean) / std)
 
     # Transform dense text variables into feature vector columns
     
@@ -157,9 +173,11 @@ def data_preprocessing(is_training, input_data, input_outcome_variables, input_v
             )
         
         # Extract text feature vectors (sparse matrix)
+        
         text_vectors = text_vectoriser.fit_transform(raw_documents = input_data[col].astype(str))
             
-        # Convert text feature vectors into a data frame 
+        # Convert text feature vectors into a data frame
+        
         text_features_vectorised = pd.DataFrame.sparse.from_spmatrix(
             data = text_vectors
             , columns = ([col + str(i) for i in (pd.RangeIndex(start = 1, stop = text_vectors.shape[1]+1, step = 1).to_list())])
@@ -167,6 +185,7 @@ def data_preprocessing(is_training, input_data, input_outcome_variables, input_v
         # text_features_vectorised.iloc[:, 0].sparse.to_dense().sum() # Check sum of vector values in new variable column
         
         # substitute in new variable columns
+        
         input_data = pd.concat(objs = [input_data, text_features_vectorised], axis = 1).drop(col, axis = 1)
         
         # Save text vectoriser if training model
