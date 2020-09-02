@@ -19,10 +19,11 @@ dense_text_variables = [] # List of variables that contain dense text, to transf
 import sys
 sys.path.append(working_directory) # Make other Machine Learning scripts accessible
 
-import pandas as pd
-import numpy as np
 import h2o
 import joblib
+import numpy as np
+import pandas as pd
+
 from Framework_for_Machine_Learning_Data_Prep import data_preprocessing
 
 ########## Import data ##########
