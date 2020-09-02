@@ -35,14 +35,17 @@ threshold_variable_importance = 0.001 # Threshold importance (out of 1) above wh
 import sys
 sys.path.append(working_directory) # Make other Machine Learning scripts accessible
 
-import pandas as pd
+import h2o
+import joblib
 import numpy as np
+import pandas as pd
+import pyodbc
+import re
+import shutil
 import sklearn.ensemble
 import sklearn.feature_selection
 import sklearn.model_selection
-import h2o
-import joblib
-import shutil
+
 from Framework_for_Machine_Learning_Data_Prep import data_preprocessing
 
 ########## Import data ##########
@@ -103,6 +106,7 @@ train_data, test_data, = sklearn.model_selection.train_test_split(
 # Up-sample rare outcome variable in training data to match proportion made up by other variable values
 
 print('Training data before up-sampling outcome variable:')
+
 print(pd.pivot_table(
     data = train_data
     , index = outcome_variables
@@ -118,6 +122,7 @@ if len(outcome_variable_values_to_upsample) > 0:
     train_data = pd.concat([train_data_variables_no_upsampling, train_data_variables_upsampled], axis = 0)
 
 print('Training data after up-sampling outcome variable:')
+
 print(pd.pivot_table(
     data = train_data
     , index = outcome_variables
@@ -129,10 +134,12 @@ print(pd.pivot_table(
 
 label_encoder = sklearn.preprocessing.LabelEncoder()
 
-print('Encoding outcome variable(s) if not already numeric: ' + ', '.join(outcome_variables))
 for col in outcome_variables:
-    train_data[col] = label_encoder.fit_transform(train_data[col]) # Inverse: label_encoder.inverse_transform(raw[col])
-    test_data[col] = label_encoder.fit_transform(test_data[col])        
+    dtype = train_data[col].dtype.name
+    if bool(re.search('object', dtype)) or bool(re.search('category', dtype)):
+        print('Encoding outcome variable(s) to numeric: ', col)
+        train_data[col] = label_encoder.fit_transform(train_data[col]) # Inverse: label_encoder.inverse_transform(raw[col])
+        test_data[col] = label_encoder.fit_transform(test_data[col])     
     
 ########## Determine important variables using sklearn ##########
 
@@ -150,6 +157,7 @@ model0.fit(
 # Output variable importance
 
 print('Pre-fit model variable importance')
+
 print(pd.DataFrame([
     pd.Series(list(filter(lambda i: not(i in outcome_variables), raw.columns)), name = 'Variable')
     , pd.Series(model0.feature_importances_, name = 'Importance')
@@ -177,6 +185,7 @@ model1.fit(
 )
 
 print('Model1 variable importance')
+
 print(pd.DataFrame([
     pd.Series(important_feature_columns, name = 'Variable')
     , pd.Series(model1.feature_importances_, name = 'Importance')
@@ -189,9 +198,16 @@ model1_predict = model1.predict(X = test_data.drop(outcome_variables, axis = 1)[
 # Output confusion matrix
 
 print('model1 confusion matrix on test data prediction')
-y_pred1 = pd.Series(label_encoder.inverse_transform(np.round(model1_predict, 0).astype(int)), name = 'Predicted').reset_index(drop = True)
-y_actual1 = pd.Series(label_encoder.inverse_transform(test_data[outcome_variables[0]]), name = 'Actual').reset_index(drop = True)
+
+if hasattr(label_encoder, 'classes_'):
+    y_pred1 = pd.Series(label_encoder.inverse_transform(np.round(model1_predict, 0).astype(int)), name = 'Predicted').reset_index(drop = True)
+    y_actual1 = pd.Series(label_encoder.inverse_transform(test_data[outcome_variables[0]]), name = 'Actual').reset_index(drop = True)
+else:
+    y_pred1 = pd.Series(np.round(model1_predict, 0).astype(int), name = 'Predicted').reset_index(drop = True)
+    y_actual1 = pd.Series(test_data[outcome_variables[0]], name = 'Actual').reset_index(drop = True)
+
 confusion_matrix_model1 = pd.crosstab(y_pred1, y_actual1)
+
 print(confusion_matrix_model1)
 print('Model1 successful prediction rate: ' + str(round((np.trace(confusion_matrix_model1)/ np.sum(np.sum(confusion_matrix_model1)))*100, 2)) + '%')
 
@@ -206,6 +222,7 @@ h2o.init()
 # Fit a Random Forest model using only the important variables
 
 model2 = h2o.estimators.random_forest.H2ORandomForestEstimator(balance_classes = False, binomial_double_trees = True,  max_depth = 10, seed = 0)
+
 model2.train(
     x = important_feature_columns
     , y = outcome_variables[0]
@@ -222,9 +239,16 @@ pred2 = model2.predict(test_data = h2o.H2OFrame(test_data))
 # Output confusion matrix
 
 print('model2 confusion matrix on test data prediction')
-y_pred2 = pd.Series(label_encoder.inverse_transform((pred2.as_data_frame().round(0).astype(int))['predict']), name = 'Predicted').reset_index(drop = True)
-y_actual2 = pd.Series(label_encoder.inverse_transform(test_data[outcome_variables[0]]), name = 'Actual').reset_index(drop = True)
+
+if hasattr(label_encoder, 'classes_'):
+    y_pred2 = pd.Series(label_encoder.inverse_transform((pred2.as_data_frame().round(0).astype(int))['predict']), name = 'Predicted').reset_index(drop = True)
+    y_actual2 = pd.Series(label_encoder.inverse_transform(test_data[outcome_variables[0]]), name = 'Actual').reset_index(drop = True)
+else:
+    y_pred2 = pd.Series((pred2.as_data_frame().round(0).astype(int))['predict'], name = 'Predicted').reset_index(drop = True)
+    y_actual2 = pd.Series(test_data[outcome_variables[0]], name = 'Actual').reset_index(drop = True)
+    
 confusion_matrix_model2 = pd.crosstab(y_pred2, y_actual2)
+
 print(confusion_matrix_model2)
 print('Model2 successful prediction rate: ' + str(round((np.trace(confusion_matrix_model2)/ np.sum(np.sum(confusion_matrix_model2)))*100, 2)) + '%')
 
