@@ -39,7 +39,6 @@ import h2o
 import joblib
 import numpy as np
 import pandas as pd
-import pyodbc
 import re
 import shutil
 import sklearn.ensemble
