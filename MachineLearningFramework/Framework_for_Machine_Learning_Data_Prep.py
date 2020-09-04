@@ -23,7 +23,16 @@ Purpose:
 
 ########## Data pre-processing function ##########
 
-def data_preprocessing(is_training, input_data, input_outcome_variables, input_variables_to_ignore, input_dense_text_variables, input_proportion_of_normal_distribution_to_keep):
+def data_preprocessing(
+    is_training
+    , input_data
+    , input_max_allowed_column_proportion_empty
+    , input_max_allowed_row_proportion_empty
+    , input_outcome_variables
+    , input_variables_to_ignore
+    , input_dense_text_variables
+    , input_proportion_of_normal_distribution_to_keep
+):
 
     working_directory = r"C:/Users/jason/OneDrive/Documents/PythonDataAnalysis/MachineLearningFramework/"
 
@@ -38,6 +47,8 @@ def data_preprocessing(is_training, input_data, input_outcome_variables, input_v
     - Function takes the following inputs:
         - is_training: Bit value. Only used if a dense text variable(s) exists. If 1, a text vectoriser is trained. Otherwise, a pre-trained vectoriser is loaded
         - input_data: Data frame to pre-process
+        - input_max_allowed_column_proportion_empty: Float value, representing threshold proportion of missing data in columns beyond which columns will be deleted (only if training model)
+        - input_max_allowed_row_proportion_empty: Float value, representing threshold proportion of missing data in rows beyond which rows will be deleted (only if training model)
         - input_outcome_variables: List of outcome variable(s) to predict (leave blank if input is live data, i.e. the outcome variables are to be predicted)
         - input_variables_to_ignore: List of variables not to include in model (e.g. row ID columns)
         - input_dense_text_variables: List of variables that contain dense text, to transform into feature vector columns using sklearn.feature_extraction.text.TfidfVectorizer
@@ -67,28 +78,32 @@ def data_preprocessing(is_training, input_data, input_outcome_variables, input_v
             if pd.to_numeric(input_data[col].dropna(), errors = 'coerce').notnull().all() == True:
                 input_data[col] = pd.to_numeric(input_data[col], errors = 'raise') 
 
-    # Remove rows where the outcome variable(s) is missing
+    # Remove rows where the outcome variable(s) is missing (only if training model)
 
-    print('Dropping rows where the outcome variable(s) is missing: ' + ', '.join(input_outcome_variables))
+    if is_training = 1:
     
-    for col in list(filter(lambda i: not(i in input_outcome_variables), input_data.columns)):
-        input_data = input_data[input_data[col].apply(lambda x: not(x == '' or pd.isna(x)))]
+        print('Dropping rows where the outcome variable(s) is missing: ' + ', '.join(input_outcome_variables))
+        
+        for col in list(filter(lambda i: not(i in input_outcome_variables), input_data.columns)):
+            input_data = input_data[input_data[col].apply(lambda x: not(x == '' or pd.isna(x)))]
 
-    # Remove columns with over 50% missing data
+    # Remove columns with over x% missing data (only if training model)
 
-    for col in list(filter(lambda i: not(i in input_outcome_variables), input_data.columns)):
-        if ((input_data[col].apply(lambda x: 1 if x in [''] or pd.isna(x) else 0).sum())/len(input_data[col])) >= 0.5:
-            print('Dropping column ' + col + ' due to too much missing data')
-            input_data.drop([col], axis = 1, inplace = True)
+    if is_training = 1:
+        for col in list(filter(lambda i: not(i in input_outcome_variables), input_data.columns)):
+            if ((input_data[col].apply(lambda x: 1 if x in [''] or pd.isna(x) else 0).sum())/len(input_data[col])) >= input_max_allowed_column_proportion_empty:
+                print('Dropping column ' + col + ' due to ' + str(round((input_max_allowed_column_proportion_empty * 100), 0)) + '% or more missing data')
+                input_data.drop([col], axis = 1, inplace = True)
 
-    # Remove rows with over 60% missing data
+    # Remove rows with over x% missing data (only if training model)
 
     input_data_col_count = len(input_data.columns) - len(input_outcome_variables)
 
-    for index_val in input_data.index:
-        if ((input_data.loc[index_val].apply(lambda x: 1 if x == '' or pd.isna(x) else 0).sum())/input_data_col_count) >= 0.6:
-            print('Dropping row ' + str(index_val) + ' due to too much missing data')
-            input_data.drop([index_val], axis = 0, inplace = True)         
+    if is_training = 1:
+        for index_val in input_data.index:
+            if ((input_data.loc[index_val].apply(lambda x: 1 if x == '' or pd.isna(x) else 0).sum())/input_data_col_count) >= input_max_allowed_row_proportion_empty:
+                print('Dropping row ' + str(index_val) + ' due to ' + str(round((input_max_allowed_row_proportion_empty * 100), 0)) + '% or more missing data')
+                input_data.drop([index_val], axis = 0, inplace = True)       
         
     # Update missing values: column mode for non-numeric, column median for numeric/ date/ time delta
 
