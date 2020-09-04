@@ -22,6 +22,9 @@ variables_to_ignore = [] # List of variables not to include in model (e.g. row I
 
 dense_text_variables = [] # List of variables that contain dense text, to transform into feature vector columns using sklearn.feature_extraction.text.TfidfVectorizer
 
+max_allowed_column_proportion_empty = 0.75 # Float, threshold proportion of missing data in columns beyond which columns will be deleted
+max_allowed_row_proportion_empty = 0.75 # Float, threshold proportion of missing data in rows beyond which rows will be deleted
+
 proportion_of_normal_distribution_to_keep = 0.99 # Proportion of a normal distribution to treat as non-outlying data
 # Used to calculate the threshold distance from the mean to treat as outlying, to exclude from the training data 
 
@@ -76,6 +79,8 @@ print('########## Model data pre-processing ##########')
 raw = data_preprocessing(
     is_training = 1
     , input_data = raw
+    , input_max_allowed_column_proportion_empty = max_allowed_column_proportion_empty
+    , input_max_allowed_row_proportion_empty = max_allowed_row_proportion_empty
     , input_outcome_variables = outcome_variables
     , input_variables_to_ignore = variables_to_ignore
     , input_dense_text_variables = dense_text_variables
