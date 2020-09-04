@@ -63,6 +63,8 @@ print('########## Processing live data to make a prediction on ##########')
 to_predict = data_preprocessing(
     is_training = 0
     , input_data = to_predict
+    , input_max_allowed_column_proportion_empty = 1
+    , input_max_allowed_row_proportion_empty = 1
     , input_outcome_variables = []
     , input_variables_to_ignore = []
     , input_dense_text_variables = dense_text_variables
