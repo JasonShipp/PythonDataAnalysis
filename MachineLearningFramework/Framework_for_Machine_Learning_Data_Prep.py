@@ -80,7 +80,7 @@ def data_preprocessing(
 
     # Remove rows where the outcome variable(s) is missing (only if training model)
 
-    if is_training = 1:
+    if is_training == 1:
     
         print('Dropping rows where the outcome variable(s) is missing: ' + ', '.join(input_outcome_variables))
         
@@ -89,7 +89,7 @@ def data_preprocessing(
 
     # Remove columns with over x% missing data (only if training model)
 
-    if is_training = 1:
+    if is_training == 1:
         for col in list(filter(lambda i: not(i in input_outcome_variables), input_data.columns)):
             if ((input_data[col].apply(lambda x: 1 if x in [''] or pd.isna(x) else 0).sum())/len(input_data[col])) >= input_max_allowed_column_proportion_empty:
                 print('Dropping column ' + col + ' due to ' + str(round((input_max_allowed_column_proportion_empty * 100), 0)) + '% or more missing data')
@@ -97,7 +97,7 @@ def data_preprocessing(
 
     # Remove rows with over x% missing data (only if training model)
 
-    input_data_col_count = len(input_data.columns) - len(input_outcome_variables)
+    input_data_col_count == len(input_data.columns) - len(input_outcome_variables)
 
     if is_training = 1:
         for index_val in input_data.index:
