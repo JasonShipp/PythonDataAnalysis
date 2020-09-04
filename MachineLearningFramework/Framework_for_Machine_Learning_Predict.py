@@ -30,7 +30,7 @@ from Framework_for_Machine_Learning_Data_Prep import data_preprocessing
 
 print('########## Importing data ##########')
 
-outcome_variables = ['species']
+outcome_variables = ['species'] # Only needed for test. Otherwise, this should not be in the prediction data
 
 from sklearn.datasets import load_iris
 iris = load_iris()
