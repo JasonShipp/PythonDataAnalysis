@@ -12,6 +12,8 @@ Purpose:
 
 working_directory = r"C:/Users/jason/OneDrive/Documents/PythonDataAnalysis/MachineLearningFramework/" # Directory of Machine Learning scripts
 
+variables_to_ignore = [] # List of variables not to include in model (e.g. row ID columns)
+
 dense_text_variables = [] # List of variables that contain dense text, to transform into feature vector columns using sklearn.feature_extraction.text.TfidfVectorizer
 
 # Import modules
@@ -66,7 +68,7 @@ to_predict = data_preprocessing(
     , input_max_allowed_column_proportion_empty = 1
     , input_max_allowed_row_proportion_empty = 1
     , input_outcome_variables = []
-    , input_variables_to_ignore = []
+    , input_variables_to_ignore = variables_to_ignore
     , input_dense_text_variables = dense_text_variables
     , input_proportion_of_normal_distribution_to_keep = 1
 )
