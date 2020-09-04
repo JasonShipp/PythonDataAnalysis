@@ -97,9 +97,9 @@ def data_preprocessing(
 
     # Remove rows with over x% missing data (only if training model)
 
-    input_data_col_count == len(input_data.columns) - len(input_outcome_variables)
+    input_data_col_count = len(input_data.columns) - len(input_outcome_variables)
 
-    if is_training = 1:
+    if is_training == 1:
         for index_val in input_data.index:
             if ((input_data.loc[index_val].apply(lambda x: 1 if x == '' or pd.isna(x) else 0).sum())/input_data_col_count) >= input_max_allowed_row_proportion_empty:
                 print('Dropping row ' + str(index_val) + ' due to ' + str(round((input_max_allowed_row_proportion_empty * 100), 0)) + '% or more missing data')
