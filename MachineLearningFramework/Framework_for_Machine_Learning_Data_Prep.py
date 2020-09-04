@@ -97,34 +97,37 @@ def data_preprocessing(
 
     # Remove rows with over x% missing data (only if training model)
 
-    input_data_col_count = len(input_data.columns) - len(input_outcome_variables)
-
     if is_training == 1:
+        
+        print('Dropping rows with ' + str(round((input_max_allowed_row_proportion_empty * 100), 0)) + '% or more missing data')
+        
+        input_data_col_count = len(input_data.columns) - len(input_outcome_variables)
+        
         for index_val in input_data.index:
             if ((input_data.loc[index_val].apply(lambda x: 1 if x == '' or pd.isna(x) else 0).sum())/input_data_col_count) >= input_max_allowed_row_proportion_empty:
-                print('Dropping row ' + str(index_val) + ' due to ' + str(round((input_max_allowed_row_proportion_empty * 100), 0)) + '% or more missing data')
-                input_data.drop([index_val], axis = 0, inplace = True)       
+                input_data.drop([index_val], axis = 0, inplace = True)     
         
     # Update missing values: column mode for non-numeric, column median for numeric/ date/ time delta
 
-    print('Imputing missing values')
-    
     for col in list(filter(lambda i: not(i in input_outcome_variables), input_data.columns)):
+        print('Imputing missing values for column ' + col)
         dtype = input_data[col].dtype.name
         if bool(re.search('object', dtype)) or bool(re.search('category', dtype)):
-            input_data[col] = input_data[col].apply(lambda x: input_data[col].mode()[0] if x == '' or pd.isna(x) else x)
+            impute_mode = input_data[col].mode()[0]
+            input_data[col] = input_data[col].apply(lambda x: impute_mode if x == '' or pd.isna(x) else x)
         elif bool(re.search('datetime', dtype)) or bool(re.search('timedelta', dtype)):
-            input_data[col] = input_data[col].apply(lambda x: (list(input_data.sort_values(col)[col]))[len(input_data)//2] if x == '' or pd.isna(x) else x)
+            impute_date = (list(input_data.dropna(subset = [col]).sort_values(col)[col]))[len(input_data)//2]
+            input_data[col] = input_data[col].apply(lambda x: impute_date if x == '' or pd.isna(x) else x)
         else:
-            input_data[col] = input_data[col].apply(lambda x: input_data[col].median() if x == '' or pd.isna(x) else x)
+            impute_median = input_data[col].median()
+            input_data[col] = input_data[col].apply(lambda x: impute_median if x == '' or pd.isna(x) else x)
             
     # Replace numeric outliers by the mean of the column (keeps more information about the outliers than using the median)
 
     norm_dist_prop_to_keep_stds = scipy.stats.norm.interval(input_proportion_of_normal_distribution_to_keep)[1] # Standard deviations from the mean that capture x proportion of the data, assuming a normal distribution
 
-    print('Replacing numeric values more than ' + str(round(norm_dist_prop_to_keep_stds, 2)) + ' standard deviations from the mean with the column mean')
-
     for col in list(filter(lambda i: not(i in input_outcome_variables), input_data.columns)):
+        print('Replacing numeric values more than ' + str(round(norm_dist_prop_to_keep_stds, 2)) + ' standard deviations from the mean with the column mean for column ' + col)
         dtype = input_data[col].dtype.name
         if not(bool(re.search('object', dtype)) or bool(re.search('category', dtype)) or bool(re.search('datetime', dtype)) or bool(re.search('timedelta', dtype))):
             mean = input_data[col].mean()
@@ -143,13 +146,15 @@ def data_preprocessing(
             
     # Transform date and time delta columns to numeric
 
-    print('Transforming date and time delta columns to numeric')
+    # Transform date and time delta columns to numeric
 
     for col in list(filter(lambda i: not(i in input_outcome_variables), input_data.columns)):
         dtype = input_data[col].dtype.name
         if bool(re.search('datetime', dtype)):
+            print('Transforming date column ' + col + ' to numeric')
             input_data[col] = input_data[col].apply(lambda x: time.mktime(x.timetuple()))
         if bool(re.search('timedelta', dtype)):
+            print('Transforming time delta column ' + col + ' to numeric')
             input_data[col] = input_data[col].dt.total_seconds()
 
     # Standardise numeric values
