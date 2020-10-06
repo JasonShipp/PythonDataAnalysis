@@ -31,6 +31,8 @@ proportion_of_normal_distribution_to_keep = 0.99 # Proportion of a normal distri
 outcome_variable_values_to_upsample = [] # List of rare values in outcome variable(s) to up-sample in training data
 # If using multiple outcome variables, concatenate rare values from multiple columns, separated by '-' (e.g. 'homeowner-male')
 
+upsample_proportion_of_common_variable = 1 # Proportion of common outcome variable to upsample rare outcome variable to, e.g. to upsample so rare outcome rows = common outcome rows, set value to 1
+
 threshold_variable_importance = 0.001 # Threshold importance (out of 1) above which to include variables in model. Lower to keep more variables in model
 
 # Import modules
@@ -122,7 +124,7 @@ train_data_variables_no_upsampling = train_data[train_data[outcome_variables[0]]
 train_data_variables_upsampling = train_data[train_data[outcome_variables[0]].apply(lambda x: x in outcome_variable_values_to_upsample)]
 
 if len(outcome_variable_values_to_upsample) > 0:
-    train_data_variables_upsampled = train_data_variables_upsampling.sample(n = len(train_data_variables_no_upsampling), replace = True)
+    train_data_variables_upsampled = train_data_variables_upsampling.sample(n = len(train_data_variables_no_upsampling) * upsample_proportion_of_common_variable, replace = True)
     train_data = pd.concat([train_data_variables_no_upsampling, train_data_variables_upsampled], axis = 0)
 
 print('Training data after up-sampling outcome variable:')
