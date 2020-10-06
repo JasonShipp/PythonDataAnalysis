@@ -84,7 +84,7 @@ def data_preprocessing(
     
         print('Dropping rows where the outcome variable(s) is missing: ' + ', '.join(input_outcome_variables))
         
-        for col in list(filter(lambda i: not(i in input_outcome_variables), input_data.columns)):
+        for col in list(filter(lambda i: (i in input_outcome_variables), input_data.columns)):
             input_data = input_data[input_data[col].apply(lambda x: not(x == '' or pd.isna(x)))]
 
     # Remove columns with over x% missing data (only if training model)
