@@ -68,7 +68,7 @@ print(imported.describe())
 
 # Load data for training and testing model
 
-raw = imported.copy()    
+raw = imported.copy(deep = True)    
 
 ########## Model data pre-processing ##########
     
