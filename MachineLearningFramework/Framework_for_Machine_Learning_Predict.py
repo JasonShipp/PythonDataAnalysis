@@ -41,8 +41,8 @@ imported = pd.DataFrame(data = iris.data, columns = iris.feature_names)
 imported[outcome_variables[0]] = iris.target
 imported[outcome_variables[0]]= imported[outcome_variables[0]].map(dict(enumerate(iris.target_names, 0)))
 
-imported_to_predict = imported.copy().drop(outcome_variables, axis = 1).sample(random_state = 0, n = int(len(imported)/10))
-to_predict = imported_to_predict.copy()
+imported_to_predict = imported.copy(deep = True).drop(outcome_variables, axis = 1).sample(random_state = 0, n = int(len(imported)/10))
+to_predict = imported_to_predict.copy(deep = True)
 
 ########## Load models ##########
 
