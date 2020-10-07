@@ -83,7 +83,7 @@ imported_to_predict['Model1_Prediction'] = label_encoder.inverse_transform(np.ro
 
 model2_predict_live = model2.predict(test_data = h2o.H2OFrame(to_predict[important_feature_columns]))
 imported_to_predict['Model2_Prediction_Raw'] = model2_predict_live.as_data_frame().iloc[:,0].values
-imported_to_predict['Model2_Prediction'] = label_encoder.inverse_transform((model2_predict_live.as_data_frame().round(0).astype(int))['predict'])
+imported_to_predict['Model2_Prediction'] = label_encoder.inverse_transform((model2_predict_live.as_data_frame().round(0).astype(int)).iloc[:,0])
 
 print('Predicted outcomes on live data')
 print(imported_to_predict)
