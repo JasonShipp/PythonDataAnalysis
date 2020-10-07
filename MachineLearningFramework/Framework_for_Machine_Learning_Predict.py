@@ -78,8 +78,8 @@ to_predict = data_preprocessing(
 print('########## Predicting outcomes on live data ##########')
 
 model1_predict_live = model1.predict(X = to_predict[important_feature_columns])
-imported_to_predict['Model1_Prediction_Raw'] = pd.Series(model1_predict_live)
-imported_to_predict['Model1_Prediction'] = label_encoder.inverse_transform(np.round(pd.Series(model1_predict_live), 0).astype(int))
+imported_to_predict['Model1_Prediction_Raw'] = model1_predict_live
+imported_to_predict['Model1_Prediction'] = label_encoder.inverse_transform(np.round(model1_predict_live, 0).astype(int))
 
 model2_predict_live = model2.predict(test_data = h2o.H2OFrame(to_predict[important_feature_columns]))
 imported_to_predict['Model2_Prediction_Raw'] = model2_predict_live.as_data_frame()
