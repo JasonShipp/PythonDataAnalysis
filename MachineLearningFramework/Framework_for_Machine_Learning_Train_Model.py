@@ -42,6 +42,7 @@ sys.path.append(working_directory) # Make other Machine Learning scripts accessi
 
 import h2o
 import joblib
+import matplotlib
 import numpy as np
 import pandas as pd
 import re
@@ -196,6 +197,13 @@ print(pd.DataFrame([
     pd.Series(important_feature_columns, name = 'Variable')
     , pd.Series(model1.feature_importances_, name = 'Importance')
 ]).transpose().sort_values(by = 'Importance', ascending = False))
+
+print('Model1 visual')
+
+matplotlib.pyplot.figure(figsize = (20, 20))
+sklearn.tree.plot_tree(decision_tree = model1.estimators_[0], feature_names = important_feature_columns, rounded = True)
+matplotlib.pyplot.savefig(working_directory + 'model1_visual.png')
+matplotlib.pyplot.show()
 
 # Test model on testing data
 
