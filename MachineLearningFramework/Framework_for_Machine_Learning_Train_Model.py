@@ -205,17 +205,22 @@ model1_predict = model1.predict(X = test_data.drop(outcome_variables, axis = 1)[
 
 print('model1 confusion matrix on test data prediction')
 
+y_pred1_raw = pd.Series(model1_predict, name = 'Model1_Prediction_Raw').reset_index(drop = True)
+
 if hasattr(label_encoder, 'classes_'):
-    y_pred1 = pd.Series(label_encoder.inverse_transform(np.round(model1_predict, 0).astype(int)), name = 'Predicted').reset_index(drop = True)
+    y_pred1 = pd.Series(label_encoder.inverse_transform(np.round(model1_predict, 0).astype(int)), name = 'Model1_Prediction').reset_index(drop = True)
     y_actual1 = pd.Series(label_encoder.inverse_transform(test_data[outcome_variables[0]]), name = 'Actual').reset_index(drop = True)
 else:
-    y_pred1 = pd.Series(np.round(model1_predict, 0).astype(int), name = 'Predicted').reset_index(drop = True)
+    y_pred1 = pd.Series(np.round(model1_predict, 0).astype(int), name = 'Model1_Prediction').reset_index(drop = True)
     y_actual1 = pd.Series(test_data[outcome_variables[0]], name = 'Actual').reset_index(drop = True)
 
 confusion_matrix_model1 = pd.crosstab(y_pred1, y_actual1)
 
 print(confusion_matrix_model1)
 print('Model1 successful prediction rate: ' + str(round((np.trace(confusion_matrix_model1)/ np.sum(np.sum(confusion_matrix_model1)))*100, 2)) + '%')
+
+confusion_matrix_model1_data = y_pred1_raw.to_frame().join(y_pred1).join(y_actual1)
+#print(confusion_matrix_model1_data)
 
 ########## Model using H2O ##########
 
@@ -246,17 +251,22 @@ pred2 = model2.predict(test_data = h2o.H2OFrame(test_data))
 
 print('model2 confusion matrix on test data prediction')
 
+y_pred2_raw = pd.Series(pred2.as_data_frame().iloc[:,0], name = 'Model2_Prediction_Raw').reset_index(drop = True)
+
 if hasattr(label_encoder, 'classes_'):
-    y_pred2 = pd.Series(label_encoder.inverse_transform((pred2.as_data_frame().round(0).astype(int))['predict']), name = 'Predicted').reset_index(drop = True)
+    y_pred2 = pd.Series(label_encoder.inverse_transform((pred2.as_data_frame().round(0).astype(int)).iloc[:,0]), name = 'Model2_Prediction').reset_index(drop = True)
     y_actual2 = pd.Series(label_encoder.inverse_transform(test_data[outcome_variables[0]]), name = 'Actual').reset_index(drop = True)
 else:
-    y_pred2 = pd.Series((pred2.as_data_frame().round(0).astype(int))['predict'], name = 'Predicted').reset_index(drop = True)
+    y_pred2 = pd.Series((pred2.as_data_frame().round(0).astype(int)).iloc[:,0], name = 'Model2_Prediction').reset_index(drop = True)
     y_actual2 = pd.Series(test_data[outcome_variables[0]], name = 'Actual').reset_index(drop = True)
     
 confusion_matrix_model2 = pd.crosstab(y_pred2, y_actual2)
 
 print(confusion_matrix_model2)
 print('Model2 successful prediction rate: ' + str(round((np.trace(confusion_matrix_model2)/ np.sum(np.sum(confusion_matrix_model2)))*100, 2)) + '%')
+
+confusion_matrix_model2_data = y_pred2_raw.to_frame().join(y_pred2).join(y_actual2)
+# print(confusion_matrix_model2_data)
 
 ########## Save models ##########
 
