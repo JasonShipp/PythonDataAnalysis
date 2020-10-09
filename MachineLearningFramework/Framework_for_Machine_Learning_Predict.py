@@ -79,11 +79,19 @@ print('########## Predicting outcomes on live data ##########')
 
 model1_predict_live = model1.predict(X = to_predict[important_feature_columns])
 imported_to_predict['Model1_Prediction_Raw'] = model1_predict_live
-imported_to_predict['Model1_Prediction'] = label_encoder.inverse_transform(np.round(model1_predict_live, 0).astype(int))
 
+if hasattr(label_encoder, 'classes_'):
+    imported_to_predict['Model1_Prediction'] = label_encoder.inverse_transform(np.round(model1_predict_live, 0).astype(int))
+else:
+    imported_to_predict['Model1_Prediction'] = np.round(model1_predict_live, 0).astype(int)
+    
 model2_predict_live = model2.predict(test_data = h2o.H2OFrame(to_predict[important_feature_columns]))
 imported_to_predict['Model2_Prediction_Raw'] = model2_predict_live.as_data_frame().iloc[:,0].values
-imported_to_predict['Model2_Prediction'] = label_encoder.inverse_transform((model2_predict_live.as_data_frame().round(0).astype(int)).iloc[:,0])
+
+if hasattr(label_encoder, 'classes_'):
+    imported_to_predict['Model2_Prediction'] = label_encoder.inverse_transform((model2_predict_live.as_data_frame().round(0).astype(int)).iloc[:,0])
+else:
+    imported_to_predict['Model2_Prediction'] = model2_predict_live.as_data_frame().round(0).astype(int).iloc[:,0]
 
 print('Predicted outcomes on live data')
 print(imported_to_predict)
