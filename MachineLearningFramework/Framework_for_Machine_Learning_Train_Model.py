@@ -201,7 +201,7 @@ print(pd.DataFrame([
 print('Model1 visual')
 
 matplotlib.pyplot.figure(figsize = (20, 20))
-sklearn.tree.plot_tree(decision_tree = model1.estimators_[0], feature_names = important_feature_columns, rounded = True)
+sklearn.tree.plot_tree(decision_tree = model1.estimators_[0], feature_names = important_feature_columns, rounded = True, max_depth = None)
 matplotlib.pyplot.savefig(working_directory + 'model1_visual.png')
 matplotlib.pyplot.show()
 
