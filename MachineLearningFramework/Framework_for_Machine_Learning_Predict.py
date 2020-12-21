@@ -78,6 +78,7 @@ to_predict = data_preprocessing(
 print('########## Predicting outcomes on live data ##########')
 
 # Subset for important features- populate column with 0s if column is not available in live data (i.e. column is in training dataset only)
+
 to_predict_important_features = pd.DataFrame(index = to_predict.index)
 
 for feature in important_feature_columns:
