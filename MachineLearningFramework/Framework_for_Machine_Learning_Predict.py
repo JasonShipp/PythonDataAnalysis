@@ -86,7 +86,7 @@ for feature in important_feature_columns:
     else:
         to_predict_important_features[feature] = 0
         
- # Run predictions
+# Run predictions
 
 model1_predict_live = model1.predict(X = to_predict_important_features)
 imported_to_predict['Model1_Prediction_Raw'] = model1_predict_live
