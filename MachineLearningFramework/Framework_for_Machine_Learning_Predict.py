@@ -77,7 +77,18 @@ to_predict = data_preprocessing(
 
 print('########## Predicting outcomes on live data ##########')
 
-model1_predict_live = model1.predict(X = to_predict[important_feature_columns])
+# Subset for important features- populate column with 0s if column is not available in live data (i.e. column is in training dataset only)
+to_predict_important_features = pd.DataFrame(index = to_predict.index)
+
+for feature in important_feature_columns:
+    if feature in to_predict.columns.tolist():
+        to_predict_important_features[feature] = to_predict[feature]
+    else:
+        to_predict_important_features[feature] = 0
+        
+ # Run predictions
+
+model1_predict_live = model1.predict(X = to_predict_important_features)
 imported_to_predict['Model1_Prediction_Raw'] = model1_predict_live
 
 if hasattr(label_encoder, 'classes_'):
@@ -85,7 +96,7 @@ if hasattr(label_encoder, 'classes_'):
 else:
     imported_to_predict['Model1_Prediction'] = np.round(model1_predict_live, 0).astype(int)
     
-model2_predict_live = model2.predict(test_data = h2o.H2OFrame(to_predict[important_feature_columns]))
+model2_predict_live = model2.predict(test_data = h2o.H2OFrame(to_predict_important_features))
 imported_to_predict['Model2_Prediction_Raw'] = model2_predict_live.as_data_frame().iloc[:,0].values
 
 if hasattr(label_encoder, 'classes_'):
