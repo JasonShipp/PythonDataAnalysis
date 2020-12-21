@@ -146,8 +146,6 @@ def data_preprocessing(
             
     # Transform date and time delta columns to numeric
 
-    # Transform date and time delta columns to numeric
-
     for col in list(filter(lambda i: not(i in input_outcome_variables), input_data.columns)):
         dtype = input_data[col].dtype.name
         if bool(re.search('datetime', dtype)):
