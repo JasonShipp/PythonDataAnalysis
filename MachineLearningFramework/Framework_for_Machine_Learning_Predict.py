@@ -49,7 +49,10 @@ to_predict = imported_to_predict.copy(deep = True)
 print('########## Loading models ##########')
 
 label_encoder = joblib.load(working_directory + 'label_encoder.sav')
-important_feature_columns = joblib.load(working_directory + 'important_feature_columns.sav')
+
+with open(working_directory + 'important_feature_columns.txt', 'r') as important_feature_columns_file_read:
+    important_feature_columns_raw = important_feature_columns_file_read.read()
+    important_feature_columns = important_feature_columns_raw.split(',')
 
 model1 = joblib.load(working_directory + 'model1.sav')
 
