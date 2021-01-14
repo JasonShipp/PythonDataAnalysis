@@ -312,7 +312,7 @@ def tree_to_code(tree, feature_names, tree_to_code_output_file):
             file.write('{}else:  # if {} > {}\n'.format(indent, name, threshold))
             recurse(tree_.children_right[node], depth + 1)
         else:
-            file.write('{}return {}\n'.format(indent, np.argmax(tree_.value[node][0])))
+            file.write('{}return {}\n'.format(indent, tree_.value[node][0][0]))
 
     recurse(0, 1)
     
