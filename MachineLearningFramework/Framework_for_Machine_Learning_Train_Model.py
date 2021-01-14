@@ -50,6 +50,7 @@ import shutil
 import sklearn.ensemble
 import sklearn.feature_selection
 import sklearn.model_selection
+from sklearn.tree import _tree
 
 from Framework_for_Machine_Learning_Data_Prep import data_preprocessing
 
@@ -287,6 +288,37 @@ joblib.dump(model1, working_directory + 'model1.sav')
 
 model2_dir = h2o.save_model(model = model2, path = working_directory, force = True) # Force overwriting
 shutil.move(src = model2_dir, dst = working_directory + 'model2.sav')
+
+# Export sklearn model decision tree logic to a text file
+
+def tree_to_code(tree, feature_names, tree_to_code_output_file):
+    
+    file = open(tree_to_code_output_file, 'w+')
+    
+    tree_ = tree.tree_
+    feature_name = [
+        feature_names[i] if i != _tree.TREE_UNDEFINED else "undefined!"
+        for i in tree_.feature
+    ]
+    file.write("def tree({}):".format(", ".join(feature_names)))
+
+    def recurse(node, depth):
+        indent = "  " * depth
+        if tree_.feature[node] != _tree.TREE_UNDEFINED:
+            name = feature_name[node]
+            threshold = tree_.threshold[node]
+            file.write('{}if {} <= {}:\n'.format(indent, name, threshold))
+            recurse(tree_.children_left[node], depth + 1)
+            file.write('{}else:  # if {} > {}\n'.format(indent, name, threshold))
+            recurse(tree_.children_right[node], depth + 1)
+        else:
+            file.write('{}return {}\n'.format(indent, np.argmax(tree_.value[node][0])))
+
+    recurse(0, 1)
+    
+    file.close()
+    
+tree_to_code(model1.estimators_[0], important_feature_columns, working_directory + 'model1_tree_decision_nodes.txt')
 
 # Close connection to H2O cluster 
 
