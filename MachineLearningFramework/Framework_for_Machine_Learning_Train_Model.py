@@ -282,7 +282,9 @@ confusion_matrix_model2_data = y_pred2_raw.to_frame().join(y_pred2).join(y_actua
 print('########## Saving models ##########')
 
 joblib.dump(label_encoder, working_directory + 'label_encoder.sav')
-joblib.dump(important_feature_columns, working_directory + 'important_feature_columns.sav')
+
+with open(working_directory + 'important_feature_columns.txt', 'w') as important_feature_columns_file:
+    important_feature_columns_file.write(",".join(important_feature_columns))
 
 joblib.dump(model1, working_directory + 'model1.sav')
 
@@ -291,7 +293,7 @@ shutil.move(src = model2_dir, dst = working_directory + 'model2.sav')
 
 # Export sklearn model decision tree logic to a text file
 
-def tree_to_code(tree, feature_names, tree_to_code_output_file):
+def tree_to_code(tree, feature_names, outcomes, tree_to_code_output_file):
     
     file = open(tree_to_code_output_file, 'w+')
     
@@ -312,13 +314,13 @@ def tree_to_code(tree, feature_names, tree_to_code_output_file):
             file.write('{}else:  # if {} > {}\n'.format(indent, name, threshold))
             recurse(tree_.children_right[node], depth + 1)
         else:
-            file.write('{}return {}\n'.format(indent, tree_.value[node][0][0]))
+            file.write('{}return {}\n'.format(indent, outcomes[np.argmax(tree_.value[node][0])]))
 
     recurse(0, 1)
     
     file.close()
     
-tree_to_code(model1.estimators_[0], important_feature_columns, working_directory + 'model1_tree_decision_nodes.txt')
+tree_to_code(model1.estimators_[0], important_feature_columns, model1.classes_, working_directory + 'model1_tree_decision_nodes.txt')
 
 # Close connection to H2O cluster 
 
