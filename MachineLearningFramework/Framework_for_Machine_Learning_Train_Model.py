@@ -127,7 +127,7 @@ train_data_variables_upsampling = train_data[train_data[outcome_variables[0]].ap
 
 if len(outcome_variable_values_to_upsample) > 0:
     train_data_variables_upsampled = train_data_variables_upsampling.sample(n = int(np.ceil(len(train_data_variables_no_upsampling) * upsample_proportion_of_common_variable)), replace = True)
-    train_data = pd.concat([train_data_variables_no_upsampling, train_data_variables_upsampled], axis = 0)
+    train_data = pd.concat([train_data_variables_no_upsampling, train_data_variables_upsampled], axis = 0, ignore_index = True)
 
 print('Training data after up-sampling outcome variable:')
 
